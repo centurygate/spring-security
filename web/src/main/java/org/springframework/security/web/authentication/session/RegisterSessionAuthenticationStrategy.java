@@ -63,6 +63,19 @@ public class RegisterSessionAuthenticationStrategy implements
 	 */
 	public void onAuthentication(Authentication authentication,
 			HttpServletRequest request, HttpServletResponse response) {
+		
+		/*I think there will be some problems with "request.getSession().getId()", beacuse this code segment will generate one
+		
+		new HttpSession object. So it will conflict with SessionCreationPolicy.STATELESS.
+		For example:
+		1. Firstly, set the SessionCreationPolicy.STATELESS which means Spring Security will never create an {@link HttpSession} and it will never use it.
+		2. Secondly, after several filters and the program  comes into  AbstractAuthenticationProcessingFilter.doFilter(...) function;   
+		   then "sessionStrategy.onAuthentication(authResult, request, response);" will be executed  after the success of  attemptAuthentication
+		3. Thirdly , sessionStrategy may be one CompositeSessionAuthenticationStrategy which contains one strategy which is the instance of RegisterSessionAuthenticationStrategy 
+		4. At Last, "request.getSession().getId()" will be executed and will create one new HttpSession.
+		So, I think we should add some checks here. 
+		*/
+		
 		sessionRegistry.registerNewSession(request.getSession().getId(),
 				authentication.getPrincipal());
 	}
